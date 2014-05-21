@@ -10,14 +10,8 @@ function TicTacToe(board) {
 
 
     // empty board
-    var game = {
-        newBoard: "#########",
-//        newBoard: "x###x###o",
-        gameOver: false
-        };
-//    board = "####o#x##";
-
-    SEQUENCES = this.getSequences(game.newBoard);
+//    board = "#########";
+//    board = "####O###X";
 
     // winning board
 //    board = "o#oxx##ox";
@@ -36,71 +30,19 @@ function TicTacToe(board) {
 //    board = "o#x##xoxo";
 //    board = "o#x#xxoxo";
 
-//    var game = this.determinePlay(board);
-    var currentPlayer = this.getCurrentPlayer(game.newBoard);
-    var indexBoard = this.getIndexBoard(game.newBoard);
-    this.drawBoard(indexBoard);
-
-    console.log('To play as x, enter x. \nTo play as o enter o.');
-    var player = prompt();
-//    var player = 'o';
-    var opponent = (player == 'x') ? 'o' : 'x';
-
-    if (player == 'o') {
-        while (!game.gameOver) {
-            currentPlayer = this.getCurrentPlayer(game.newBoard);
-            if (currentPlayer == 'x') {
-                game = this.determinePlay(game.newBoard);
-            } else {
-                console.log('You play as: ' + currentPlayer);
-                var move = prompt('Please enter move index: ');
-                while (game.newBoard[move] != '#') {
-                    this.drawBoard(indexBoard);
-                    move = prompt('Please provide a valid empty index: ');
-                }
-                game.newBoard = this.replaceChar(game.newBoard, move, currentPlayer);
-            }
-            indexBoard = this.getIndexBoard(game.newBoard);
-            this.drawBoard(indexBoard);
-
-            game.gameOver = this.getGameStatus(game, player, opponent);
-        }
-    } else if (player == 'x') {
-        while (!game.gameOver) {
-            currentPlayer = this.getCurrentPlayer(game.newBoard);
-            if (currentPlayer == 'o') {
-                game = this.determinePlay(game.newBoard);
-            } else {
-                console.log('You play as: ' + currentPlayer);
-                var move = prompt('Please enter move index: ');
-                while (game.newBoard[move] != '#') {
-                    this.drawBoard(indexBoard);
-                    console.log('Please provide a valid empty index.');
-                    move = prompt();
-                }
-                game.newBoard = this.replaceChar(game.newBoard, move, currentPlayer);
-            }
-            indexBoard = this.getIndexBoard(game.newBoard);
-            this.drawBoard(indexBoard);
-
-            game.gameOver = this.getGameStatus(game, player, opponent);
-        }
-    } else {
-        console.log("You can only play as X or O. Please re-run the program.");
-    }
-
+//    this.drawBoard(board);
+    // perform play
+    this.determinePlay(board);
 
 }
 
-//var prompt = require('prompt');
-var prompt = require('sync-prompt').prompt;
 var _ = require('lodash');
 
 var EXIT_CODES = {
-    "otherPlayerMove": 0,
-    "victory": 1,
-    "loss": 2,
-    "draw": 3
+    "otherPlayerMove": "CONTINUE",
+    "victory": "WIN",
+    "loss": "LOSE",
+    "draw": "DRAW"
 };
 
 var SEQUENCES_MAP = [
@@ -142,35 +84,26 @@ TicTacToe.prototype = {
         return result;
     },
 
-    getGameStatus: function(game, player, opponent) {
 
-        // check opponent victory
-        if (this.isWon(game.newBoard, player)) {
-            console.log(opponent + ' won!');
-            return true;
-        }
+//    this.getIndexesWithContent(board, '#');// ['#','x','#'],'#' -> [0,2]
 
-        // check computer victory
-        if (this.isWon(game.newBoard, opponent)) {
-            console.log(opponent + ' won!');
-            return true;
-        }
-
-        // check tie
-        if (this.isTied(game.newBoard)) {
-            console.log("it's a draw!");
-            return true;
-        }
-
-        return false;
-    },
+//    getEmptyCornerIndex: function (board) {
+//
+//        for (var i = 0; i < CORNER_INDEX.length; i++) {
+//            if (board[CORNER_INDEX[i]] == '#') {
+//                return CORNER_INDEX[i];
+//            }
+//        }
+//
+//        return -1;
+//    },
 
     determinePlay: function (board) {
-        console.log(board);
-
+//        console.log(board);
+        var turnOver = false;
         // generating object board and array board just to see whats up
-        var arrBoard = board.split("");
-        var gameOver = false;
+//        var objBoard = this.generateBoardObj(board);
+        var arrBoard = board.split('');
 
         SEQUENCES = this.getSequences(board);
 
@@ -178,49 +111,92 @@ TicTacToe.prototype = {
         var me = this.getCurrentPlayer(board);
 
         // assign opponent player
-        var opponent = (me == 'x') ? 'o' : 'x';
+        var opponent = (me == 'X') ? 'O' : 'X';
 //        console.log('you play: ' + me);
-//
+
         // check if already lost
 //        console.log("check loss:");
-//        if (this.isWon(board, opponent)) {
-//            console.log(opponent + ' won!');
-//            gameOver = true;
-////            process.exit(EXIT_CODES.loss);
-//        }
+        if (this.isWon(SEQUENCES, opponent)) {
+            console.log(EXIT_CODES.loss);
+            turnOver = true;
+//            process.exit(EXIT_CODES.loss);
+        }
 //        console.log("false");
 
         // make play
 //        console.log("make play");
         var newBoard = this.makePlay(board, me, opponent, arrBoard);
-//        console.log("new board: " + newBoard);
-        this.drawBoard(newBoard);
+        SEQUENCES = this.getSequences(newBoard);
+        console.log(newBoard);
+//        this.drawBoard(newBoard);
 
         // check for win
-//        if (this.isWon(newBoard, me)) {
-//            console.log(me + ' won!');
-//            gameOver = true;
-////            process.exit(EXIT_CODES.victory);
-//        }
+        if (this.isWon(SEQUENCES, me)) {
+            console.log(EXIT_CODES.victory);
+            turnOver = true;
+//            process.exit(EXIT_CODES.victory);
+        }
 //        console.log("false");
 
         // check for tie
 //        console.log("check for tie: ");
-//        if (this.isTied(newBoard)) {
-//            console.log("it's a draw!");
-//            gameOver = true;
-////            process.exit(EXIT_CODES.draw);
-//        }
-
-//        console.log("false");
+        if (this.isTied(newBoard) && !turnOver) {
+            console.log(EXIT_CODES.draw);
+            turnOver = true;
+//            process.exit(EXIT_CODES.draw);
+        }
+        if (!turnOver){
+            console.log(EXIT_CODES.otherPlayerMove);
+        }
 //        console.log("other player move. \nnew board: " + newBoard);
-        var turn = {
-            "newBoard": newBoard,
-            "gameOver": gameOver
-        };
-        return turn;
-//        process.exit(EXIT_CODES.otherPlayerMove);
+//        return newBoard;
+        process.exit(0);
     },
+
+    generateBoardObj: function (board) {
+        var arrBoard = board.split("");
+        var objBoard = {};
+        var counter = 0;
+        for (var i = 0; i < 3; i++) {
+            for (var j = 0; j < 3; j++) {
+                var square = {};
+                square.x = j;
+                square.y = i;
+                square.value = arrBoard.shift();
+                objBoard[counter] = square;
+                counter++;
+            }
+        }
+
+        return objBoard;
+    },
+
+    checkAndPlayEmptyBoard: function (arrBoard, board, currentPlayer) {
+
+        // check if board is empty - if so, change bottom right corner to currentPlayer
+        var isSlotEmpty = function (element) {
+            return (element == "#");
+        };
+
+        if (arrBoard.every(isSlotEmpty)) {
+            return this.replaceChar(board, board.length - 1, currentPlayer);
+        }
+
+        return [];
+    },
+
+//    getWinningIndex: function (board, player) {
+//        for (var i = 0; i < board.length; i++) {
+//            if (board[i] == '#') {
+//                var possibleWinningBoard = this.replaceChar(board, i, player);
+//                if (this.isWon(possibleWinningBoard, player)) {
+//                    return i;
+//                }
+//            }
+//        }
+//
+//        return null;
+//    },
 
     getSequences: function (board) {
 
@@ -231,6 +207,36 @@ TicTacToe.prototype = {
         });
 
         return sequences;
+
+//        var function getValuesByIndexes(valuesArray, indexesArray) {
+//            return _.map(indexesArray, function(index) {
+//              return board[index];
+//            })
+//        }
+//
+//        var sequences = [];
+//        _.forEach(SEQUENCES_MAP, function(indexArray){
+//
+//            sequences.push(getValuesByIndexes(indexArray, board));
+//        });
+
+//        var sequences = [];
+//
+//        // generate rows
+//        for (var i = 0; i < board.length; i += 3) {
+//            sequences.push([board[i], board[i + 1], board[i + 2]]);
+//        }
+//
+//        // generate columns
+//        for (var i = 0; i < 3; i++) {
+//            sequences.push([board[i], board[i + 3], board[i + 6]]);
+//        }
+//
+//        // generate diagonals
+//        sequences.push([board[0], board[4], board[8]]);
+//        sequences.push([board[2], board[4], board[6]]);
+//
+
     },
 
     getWinningIndex: function (player) {
@@ -316,16 +322,9 @@ TicTacToe.prototype = {
         return possibleForkSequencesIndex;
     },
 
-    getPossibleThreatsSequences: function (sequences, player) {
-
-
-    },
-
     makePlay: function (board, currentPlayer, opponentPlayer, arrBoard) {
 
-        var emptySlots = this.getIndexesOfContent(arrBoard, '#');
-        var xLocations = this.getIndexesOfContent(arrBoard, 'x');
-        var oLocations = this.getIndexesOfContent(arrBoard, 'o');
+        SEQUENCES = this.getSequences(board);
 
         // check for possible win and make winning move
         var winningIndex = this.getWinningIndex(currentPlayer);
@@ -339,6 +338,7 @@ TicTacToe.prototype = {
             return this.replaceChar(board, winningIndex, currentPlayer)
         }
 
+
         // return only valid possible forks (1 x me, 2 x empty)
         var possibleForks = this.getPossibleForks(SEQUENCES, currentPlayer);
 
@@ -350,6 +350,8 @@ TicTacToe.prototype = {
         }
 
         // check and block enemy fork
+
+        var emptySlots = this.getIndexesOfContent(arrBoard, '#');
         var opponentPossibleForks = this.getPossibleForks(SEQUENCES, opponentPlayer);
 
         if (opponentPossibleForks.length !== 0) {
@@ -365,9 +367,43 @@ TicTacToe.prototype = {
             }
         }
 
-        if (currentPlayer == 'x') { // mark center
+
+        // create a fork is possible
+//        // get sequences (rows, columns, diagonals)
+//        var sequences = this.getSequences(board);
+//
+//        // return only valid possible forks (1 x me, 2 x empty)
+//        var possibleForks = this.getPossibleForks(sequences, currentPlayer);
+//
+//        // return valid fork index
+//        var forkIntersection = this.getForkIndex(possibleForks, board);
+//
+//        if (forkIntersection) {
+//            return this.replaceChar(board, forkIntersection, currentPlayer);
+//        }
+//
+//        // check and block enemy fork
+//        possibleForks = this.getPossibleForks(sequences, opponentPlayer);
+//
+//        forkIntersection = this.getForkIndex(possibleForks, board);
+//
+//        if (forkIntersection) {
+//            return this.replaceChar(board, forkIntersection, currentPlayer);
+//        }
+
+
+//        console.log(this.drawBoard(board));
+
+
+        var xLocations = this.getIndexesOfContent(arrBoard, 'X');
+        var oLocations = this.getIndexesOfContent(arrBoard, 'O');
+
+        var emptyMiddleIntersection = _.intersection(emptySlots, SIDE_MIDDLE_INDEX);
+        var emptyCornerIntersection = _.intersection(emptySlots, CORNER_INDEX);
+
+
+        if (currentPlayer == 'X') { // mark center
             // put in empty corner
-            var emptyCornerIntersection = _.intersection(emptySlots, CORNER_INDEX);
             if (emptyCornerIntersection.length == 4) {
                 return this.replaceChar(board, emptyCornerIntersection.pop(), currentPlayer);
             }
@@ -376,7 +412,6 @@ TicTacToe.prototype = {
                 return this.replaceChar(board, emptyCornerIntersection.pop(), currentPlayer);
             }
             // check and respond to side middle
-            var emptyMiddleIntersection = _.intersection(emptySlots, SIDE_MIDDLE_INDEX);
             if (emptyMiddleIntersection.length == 3 && board[4] == '#') {
                 return this.replaceChar(board, 4, currentPlayer);
             }
@@ -389,7 +424,7 @@ TicTacToe.prototype = {
                     "6": 2,
                     "8": 0
                 };
-                var cornerIndex = xLocations.pop()
+                var cornerIndex = xLocations.pop();
                 return this.replaceChar(board, oppositeCorners[cornerIndex], currentPlayer);
             }
 
@@ -403,15 +438,19 @@ TicTacToe.prototype = {
                 return this.replaceChar(board, 4, currentPlayer);
             }
             // check and respond to middle
-            var emptyCornerIntersection = _.intersection(emptySlots, CORNER_INDEX);
             if (emptyCornerIntersection.length == 4 && board[4] == opponentPlayer) {
                 return this.replaceChar(board, emptyCornerIntersection.pop(), currentPlayer);
+            }
+            if (emptyCornerIntersection.length == 3 && emptyMiddleIntersection.length == 4 && board[4] == '#') {
+                return this.replaceChar(board, 4, currentPlayer);
+            }
+            if (emptyCornerIntersection.length == 2 && emptyMiddleIntersection.length == 4 && board[4] == currentPlayer) {
+                return this.replaceChar(board, emptyMiddleIntersection.pop(), currentPlayer);
             }
             if (emptyCornerIntersection.length == 2 && board[4] == opponentPlayer) {
                 return this.replaceChar(board, emptyCornerIntersection.pop(), currentPlayer);
             }
             // check and respond to corner
-            var emptyMiddleIntersection = _.intersection(emptySlots, SIDE_MIDDLE_INDEX);
             if (emptyMiddleIntersection.length == 4) {
                 return this.replaceChar(board, emptyMiddleIntersection.pop(), currentPlayer);
             }
@@ -423,6 +462,58 @@ TicTacToe.prototype = {
             var randomIndex = Math.floor(Math.random() * (emptySlots.length + 1));
             return this.replaceChar(board, randomIndex, currentPlayer);
         }
+
+//        if (currentPlayer == 'X') { // mark center
+//            // put in empty corner
+//            var emptyCornerIntersection = _.intersection(emptySlots, CORNER_INDEX);
+//            if (emptyCornerIntersection.length == 4) {
+//                return this.replaceChar(board, emptyCornerIntersection.pop(), currentPlayer);
+//            }
+//            // check and respond to corner
+//            if (emptyCornerIntersection.length == 2) {
+//                return this.replaceChar(board, emptyCornerIntersection.pop(), currentPlayer);
+//            }
+//            // check and respond to side middle
+//            var emptyMiddleIntersection = _.intersection(emptySlots, SIDE_MIDDLE_INDEX);
+//            if (emptyMiddleIntersection.length == 3 && board[4] == '#') {
+//                return this.replaceChar(board, 4, currentPlayer);
+//            }
+//
+//            // check and place center
+//            if (board[4] == opponentPlayer && xLocations.length == 1) {
+//                var oppositeCorners = {
+//                    "0":8,
+//                    "2":6,
+//                    "6":2,
+//                    "8":0
+//                };
+//                var cornerIndex = xLocations.pop()
+//                return this.replaceChar(board, oppositeCorners[cornerIndex], currentPlayer);
+//            }
+//
+//            // make first available move
+//            var randomIndex = Math.floor(Math.random() * ((emptySlots.length - 1) + 1));
+//            return this.replaceChar(board, emptySlots[randomIndex], currentPlayer);
+//
+//        } else {
+//            // check and place center
+//            if (board[4] == '#') {
+//                return this.replaceChar(board, 4, currentPlayer);
+//            }
+//            // check and respond to corner
+//            var emptyMiddleIntersection = _.intersection(emptySlots, SIDE_MIDDLE_INDEX);
+//            if (emptyMiddleIntersection.length == 4) {
+//                return this.replaceChar(board, emptyMiddleIntersection.pop(), currentPlayer);
+//            }
+//            // put in empty corner
+//            var emptyCornerIntersection = _.intersection(emptySlots, CORNER_INDEX);
+//            if (emptyCornerIntersection.length > 0) {
+//                return this.replaceChar(board, emptyCornerIntersection.pop(), currentPlayer);
+//            }
+//            // make a random available move
+//            var randomIndex = Math.floor(Math.random() * (emptySlots.length + 1));
+//            return this.replaceChar(board, randomIndex, currentPlayer);
+//        }
 
 //        var newBoardIndex = this.getWinningIndex(board, currentPlayer);
 //        if (newBoardIndex) {
@@ -447,38 +538,43 @@ TicTacToe.prototype = {
     },
 
     replaceChar: function (board, index, newChar) {
-        var b = board.split('');
-        b[index] = newChar;
-        return b.join('');
 
-//        index = Number(index);
-//        var strA = board.slice(0, index);
-//        var strB = board.slice(index + 1);
-//        return strA + newChar + strB;
+//        newChar = newChar == 'x' ? 'X' : 'O' || newChar;
+        var strA = board.slice(0, index);
+        var strB = board.slice(index + 1, board.length);
+        return strA + newChar + strB;
     },
 
     getCurrentPlayer: function (board) {
 //        return 'x';
-        var xBoard = board.match(/x/g) || [];
-        var oBoard = board.match(/o/g) || [];
+        var xBoard = board.match(/X/g) || [];
+        var oBoard = board.match(/O/g) || [];
         if (xBoard) {
             if (xBoard.length == oBoard.length) {
-                return 'x';
+                return 'X';
             } else {
-                return 'o';
+                return 'O';
             }
         } else {
-            return 'x';
+            return 'X';
         }
     },
 
-    isWon: function (board, currentPlayer) {
-        var rowWin = this.checkRowsForWin(board, currentPlayer);
-        var colWin = this.checkColumnsForWin(board, currentPlayer);
-        var diagWin = this.checkDiagWin(board, currentPlayer);
-        return (rowWin || colWin || diagWin)
-
+    isWon: function (sequences, player) {
+        return sequences.some(function (sequence) {
+            return sequence.every(function (value) {
+                return value == player;
+            })
+        });
     },
+
+//    isWon: function (board, currentPlayer) {
+//        var rowWin = this.checkRowsForWin(board, currentPlayer);
+//        var colWin = this.checkColumnsForWin(board, currentPlayer);
+//        var diagWin = this.checkDiagWin(board, currentPlayer);
+//        return (rowWin || colWin || diagWin)
+//
+//    },
 
     isTied: function (board) {
         return (board.match(/#/g) == null)
@@ -488,44 +584,44 @@ TicTacToe.prototype = {
 //        return board.indexOf('-') === -1;
 //    },
 
-    checkRowsForWin: function (board, currentPlayer) {
-        var status = false;
-        if (currentPlayer == board[0] || currentPlayer == board[3] || currentPlayer == board[6]) {
-
-            for (var i = 0; i < board.length; i += 3) {
-                if (currentPlayer == board[i] && currentPlayer == board[i + 1] && currentPlayer == board[i + 2]) {
-                    status = true
-                }
-            }
-        }
-        return status;
-    },
-
-    checkColumnsForWin: function (board, currentPlayer) {
-
-        var status = false;
-
-        if (currentPlayer == board[0] || currentPlayer == board[1] || currentPlayer == board[2]) {
-            for (var i = 0; i < 3; i++) {
-                if (currentPlayer == board[i] && currentPlayer == board[i + 3] && currentPlayer == board[i + 6]) {
-                    status = true;
-                }
-            }
-        }
-        return status;
-    },
-
-    checkDiagWin: function (board, currentPlayer) {
-
-        var status = false;
-
-        if (currentPlayer == board[0] && currentPlayer == board[4] && currentPlayer == board[8]) {
-            return true;
-        } else if (currentPlayer == board[2] && currentPlayer == board[4] && currentPlayer == board[6]) {
-            return true;
-        }
-        return status;
-    },
+//    checkRowsForWin: function (board, currentPlayer) {
+//        var status = false;
+//        if (currentPlayer == board[0] || currentPlayer == board[3] || currentPlayer == board[6]) {
+//
+//            for (var i = 0; i < board.length; i += 3) {
+//                if (currentPlayer == board[i] && currentPlayer == board[i + 1] && currentPlayer == board[i + 2]) {
+//                    status = true
+//                }
+//            }
+//        }
+//        return status;
+//    },
+//
+//    checkColumnsForWin: function (board, currentPlayer) {
+//
+//        var status = false;
+//
+//        if (currentPlayer == board[0] || currentPlayer == board[1] || currentPlayer == board[2]) {
+//            for (var i = 0; i < 3; i++) {
+//                if (currentPlayer == board[i] && currentPlayer == board[i + 3] && currentPlayer == board[i + 6]) {
+//                    status = true;
+//                }
+//            }
+//        }
+//        return status;
+//    },
+//
+//    checkDiagWin: function (board, currentPlayer) {
+//
+//        var status = false;
+//
+//        if (currentPlayer == board[0] == board[4] == board[8]) {
+//            return true;
+//        } else if (currentPlayer == board[2] == board[4] == board[6]) {
+//            return true;
+//        }
+//        return status;
+//    },
 
 //    getWinningIndex: function (board, currentPlayer) {
 //        return this.checkRowPossibleWin(board, currentPlayer);
@@ -534,7 +630,7 @@ TicTacToe.prototype = {
     drawBoard: function (board) {
 
         var str = "___________\n|";
-        console.log("GAME BOARD: ");
+//        console.log("GAME BOARD: ");
         for (var i = 1; i < board.length + 1; i++) {
             str += (i % 3 != 0) ? board[i - 1] + " | " : board[i - 1];
             if ((i % 3 == 0) && i < 9) {
@@ -543,34 +639,7 @@ TicTacToe.prototype = {
 
         }
         str += "|\n¯¯¯¯¯¯¯¯¯¯¯";
-        console.log(str);
-    },
-
-    getIndexBoard: function (board) {
-
-//        var printBoard = board;
-//        var emptySlots = this.getIndexesOfContent(arrBoard, '#');
-//        for (var i = 0; i < emptySlots.length; i++) {
-//            printBoard[i] = i;
-//        }
-
-//        var arrBoard = board.split('');
-//        for (var i = 0; i < arrBoard.length; i++) {
-//            if (arrBoard[i] == '#') {
-//                arrBoard[i] = i;
-//            }
-//        }
-//        var printBoard = arrBoard.join('');
-//        return printBoard;
-
-
-        function emptyCellsToIndex(value, index) {
-            return value == '#'
-                ? index
-                : value;
-        }
-
-        return board.split('').map(emptyCellsToIndex).join('');
+//        console.log(str);
     }
 }
 ;
